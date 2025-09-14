@@ -230,35 +230,105 @@
             }
         }
         
+        .amount-display {
+            word-break: break-word;
+            line-height: 1.2;
+        }
+        
+        /* Enhanced Mobile Responsiveness */
+        @media (max-width: 480px) {
+            .stats-grid > div {
+                padding: 1rem !important;
+            }
+            
+            .stats-grid p {
+                font-size: 1.4rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr !important;
+                gap: 1rem;
+            }
+            
+            .transaction-item {
+                padding: 0.75rem 0 !important;
+                align-items: flex-start !important;
+            }
+            
+            .transaction-amount {
+                font-size: 0.8rem !important;
+                margin-top: 0.25rem;
+                align-self: flex-end !important;
+            }
+        }
+        
         /* Fix for very small screens */
         @media (max-width: 360px) {
-            .transaction-item {
-                padding: 0.4rem 0;
-                flex-wrap: wrap;
+            .stats-grid {
+                gap: 0.5rem;
             }
             
-            .transaction-item .icon-circle {
-                width: 25px !important;
-                height: 25px !important;
-                font-size: 0.7rem !important;
+            .stats-grid > div {
+                padding: 0.75rem !important;
             }
             
-            .transaction-item .transaction-title {
-                font-size: 0.75rem;
+            .stats-grid p {
+                font-size: 1.2rem !important;
             }
             
-            .transaction-item .transaction-date {
-                font-size: 0.65rem;
-            }
-            
-            .transaction-item .transaction-amount {
-                font-size: 0.7rem;
-                margin-left: 0.25rem;
+            .stats-grid h3 {
+                font-size: 0.8rem !important;
             }
             
             .charts-grid {
                 gap: 0.75rem;
-                margin-bottom: 1rem;
+            }
+            
+            .chart-container {
+                padding: 0.75rem !important;
+            }
+            
+            .chart-container h3 {
+                font-size: 0.85rem !important;
+            }
+            
+            .transaction-item {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.5rem !important;
+                padding: 0.5rem 0 !important;
+            }
+            
+            .transaction-item > div:first-child {
+                display: flex !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
+            
+            .chart-container .icon-circle {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .transaction-title {
+                font-size: 0.8rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .transaction-date {
+                font-size: 0.7rem !important;
+            }
+            
+            .transaction-amount {
+                font-size: 0.75rem !important;
+                text-align: right !important;
+                margin: 0 !important;
+            }
+            
+            #categoryChart {
+                max-height: 180px !important;
             }
         }
     </style>
@@ -269,7 +339,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h3 style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Pemasukan</h3>
-                    <p style="font-size: 1.75rem; font-weight: bold; color: #28a745;">Rp {{ number_format($totalIncome, 0, ',', '.') }}</p>
+                    <p style="font-size: 1.75rem; font-weight: bold; color: #28a745;" class="amount-display">{{ formatCurrency($totalIncome, true) }}</p>
                     <span style="color: {{ $incomeChange >= 0 ? '#28a745' : '#dc3545' }}; font-size: 0.8rem;">
                         {{ $incomeChange >= 0 ? '↗' : '↘' }} {{ $incomeChange >= 0 ? '+' : '' }}{{ number_format($incomeChange, 1) }}% dari bulan lalu
                     </span>
@@ -282,7 +352,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h3 style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Pengeluaran</h3>
-                    <p style="font-size: 1.75rem; font-weight: bold; color: #dc3545;">Rp {{ number_format($totalExpense, 0, ',', '.') }}</p>
+                    <p style="font-size: 1.75rem; font-weight: bold; color: #dc3545;" class="amount-display">{{ formatCurrency($totalExpense, true) }}</p>
                     <span style="color: {{ $expenseChange >= 0 ? '#dc3545' : '#28a745' }}; font-size: 0.8rem;">
                         {{ $expenseChange >= 0 ? '↗' : '↘' }} {{ $expenseChange >= 0 ? '+' : '' }}{{ number_format($expenseChange, 1) }}% dari bulan lalu
                     </span>
@@ -295,7 +365,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h3 style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem;">Saldo Bersih</h3>
-                    <p style="font-size: 1.75rem; font-weight: bold; color: var(--blue-dark);">Rp {{ number_format($balance, 0, ',', '.') }}</p>
+                    <p style="font-size: 1.75rem; font-weight: bold; color: var(--blue-dark);" class="amount-display">{{ formatCurrency($balance, true) }}</p>
                     <span style="color: {{ $balanceChange >= 0 ? '#28a745' : '#dc3545' }}; font-size: 0.8rem;">
                         {{ $balanceChange >= 0 ? '↗' : '↘' }} {{ $balanceChange >= 0 ? '+' : '' }}{{ number_format($balanceChange, 1) }}% dari bulan lalu
                     </span>
@@ -323,9 +393,9 @@
             <h3 style="color: var(--blue-dark); font-weight: 600; margin-bottom: 1rem;">Transaksi Terbaru</h3>
             <div style="space-y: 0.75rem;">
                 @forelse($recentTransactions as $transaction)
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #f1f3f4;">
+                <div class="transaction-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #f1f3f4;">
                     <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                        <div class="icon-circle" style="background: {{ $transaction->type === 'income' ? '#28a745' : '#dc3545' }}; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                        <div class="icon-circle" style="background: {{ $transaction->type === 'income' ? '#28a745' : '#dc3545' }}; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;">
                             <i class="{{ $transaction->category->icon }}"></i>
                         </div>
                         <div style="flex: 1; min-width: 0;">
@@ -333,8 +403,8 @@
                             <div class="transaction-date" style="font-size: 0.8rem; color: #6c757d;">{{ $transaction->transaction_date->format('d M Y') }}</div>
                         </div>
                     </div>
-                    <div class="transaction-amount" style="color: {{ $transaction->type === 'income' ? '#28a745' : '#dc3545' }}; font-weight: 600; white-space: nowrap; margin-left: 0.5rem;">
-                        {{ $transaction->type === 'income' ? '+' : '-' }}Rp {{ number_format($transaction->amount, 0, ',', '.') }}
+                    <div class="transaction-amount" style="color: {{ $transaction->type === 'income' ? '#28a745' : '#dc3545' }}; font-weight: 600; white-space: nowrap; margin-left: 0.5rem; flex-shrink: 0; font-size: 0.85rem;">
+                        {{ $transaction->type === 'income' ? '+' : '-' }}{{ formatCurrency($transaction->amount, true) }}
                     </div>
                 </div>
                 @empty
@@ -350,29 +420,29 @@
     <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <h3 style="color: var(--blue-dark); font-weight: 600; margin-bottom: 1rem;">Aksi Cepat</h3>
         <div class="quick-actions">
-            <button class="action-btn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <a href="{{ route('pemasukan') }}" class="action-btn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; text-decoration: none;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                 <i class="fas fa-plus-circle" style="font-size: 1.5rem;"></i>
                 <div style="text-align: left;">
                     <div>Tambah Pemasukan</div>
                     <div style="font-size: 0.8rem; opacity: 0.9;">Catat pendapatan baru</div>
                 </div>
-            </button>
+            </a>
             
-            <button class="action-btn" style="background: linear-gradient(135deg, #dc3545, #e74c3c); color: white;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <a href="{{ route('pengeluaran') }}" class="action-btn" style="background: linear-gradient(135deg, #dc3545, #e74c3c); color: white; text-decoration: none;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                 <i class="fas fa-minus-circle" style="font-size: 1.5rem;"></i>
                 <div style="text-align: left;">
                     <div>Tambah Pengeluaran</div>
                     <div style="font-size: 0.8rem; opacity: 0.9;">Catat pengeluaran baru</div>
                 </div>
-            </button>
+            </a>
             
-            <button class="action-btn" style="background: linear-gradient(135deg, var(--orange), #e6741a); color: white;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            <a href="{{ route('laporan') }}" class="action-btn" style="background: linear-gradient(135deg, var(--orange), #e6741a); color: white; text-decoration: none;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                 <i class="fas fa-chart-bar" style="font-size: 1.5rem;"></i>
                 <div style="text-align: left;">
                     <div>Lihat Laporan</div>
                     <div style="font-size: 0.8rem; opacity: 0.9;">Analisis keuangan</div>
                 </div>
-            </button>
+            </a>
         </div>
     </div>
     

@@ -20,9 +20,9 @@
                     Menampilkan data untuk tahun {{ $selectedYear }}
                 </div>
             </div>
-            <button type="button" style="background: var(--orange); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer;">
+            <a href="{{ route('laporan.export-pdf', ['year' => $selectedYear]) }}" style="background: var(--orange); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;">
                 <i class="fas fa-file-pdf" style="margin-right: 0.5rem;"></i>Export PDF
-            </button>
+            </a>
         </form>
     </div>
 

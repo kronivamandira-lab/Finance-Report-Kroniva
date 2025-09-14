@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LaporanController extends Controller
 {
@@ -130,5 +131,42 @@ class LaporanController extends Controller
             'selectedYear', 'availableYears',
             'incomeChangeYear', 'expenseChangeYear', 'balanceChangeYear'
         ));
+    }
+    
+    public function exportPdf(Request $request)
+    {
+        $userId = auth()->id();
+        $selectedYear = $request->get('year', now()->year);
+        
+        $totalIncome = Transaction::where('user_id', $userId)
+            ->where('type', 'income')
+            ->whereYear('transaction_date', $selectedYear)
+            ->sum('amount');
+        $totalExpense = Transaction::where('user_id', $userId)
+            ->where('type', 'expense')
+            ->whereYear('transaction_date', $selectedYear)
+            ->sum('amount');
+        $balance = $totalIncome - $totalExpense;
+        
+        $transactions = Transaction::with('category')
+            ->where('user_id', $userId)
+            ->whereYear('transaction_date', $selectedYear)
+            ->orderBy('transaction_date', 'desc')
+            ->get();
+        
+        $expenseByCategory = Transaction::with('category')
+            ->where('user_id', $userId)
+            ->where('type', 'expense')
+            ->whereYear('transaction_date', $selectedYear)
+            ->selectRaw('category_id, SUM(amount) as total')
+            ->groupBy('category_id')
+            ->get();
+        
+        $pdf = Pdf::loadView('laporan-pdf', compact(
+            'totalIncome', 'totalExpense', 'balance',
+            'transactions', 'expenseByCategory', 'selectedYear'
+        ));
+        
+        return $pdf->download('laporan-keuangan-' . $selectedYear . '.pdf');
     }
 }

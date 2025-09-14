@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 use App\Models\Transaction;
@@ -87,6 +87,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pemasukan', [TransactionController::class, 'income'])->name('pemasukan');
     Route::get('/pengeluaran', [TransactionController::class, 'expense'])->name('pengeluaran');
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');
+    Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
     Route::get('/kategori', [CategoryController::class, 'index'])->name('kategori.index');
     
     Route::post('/kategori', [CategoryController::class, 'store'])->name('kategori.store');

@@ -41,7 +41,8 @@
 
     <!-- Data Table -->
     <div style="background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
-        <div style="overflow-x: auto;">
+        <!-- Desktop Table -->
+        <div class="desktop-table" style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse;">
                 <thead style="background: #f8f9fa;">
                     <tr>
@@ -62,7 +63,7 @@
                                 <i class="{{ $transaction->category->icon }}"></i> {{ $transaction->category->name }}
                             </span>
                         </td>
-                        <td style="padding: 1rem; text-align: right; font-weight: 600; color: #dc3545;">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
+                        <td style="padding: 1rem; text-align: right; font-weight: 600; color: #dc3545;">{{ formatCurrency($transaction->amount, true) }}</td>
                         <td style="padding: 1rem; text-align: center;">
                             <button onclick="editTransaction({{ $transaction->id }}, '{{ $transaction->description }}', {{ $transaction->amount }}, '{{ $transaction->transaction_date->format('Y-m-d') }}', {{ $transaction->category_id }})" style="background: var(--orange); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; margin-right: 0.25rem; cursor: pointer;">Edit</button>
                             <form action="{{ route('transaksi.destroy', $transaction) }}" method="POST" style="display: inline;">
@@ -80,7 +81,44 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Mobile Cards -->
+        <div class="mobile-cards" style="display: none; padding: 1rem;">
+            @forelse($transactions as $transaction)
+            <div class="transaction-card" style="background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #dc3545;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--blue-dark); margin-bottom: 0.25rem;">{{ $transaction->description }}</div>
+                        <div style="font-size: 0.8rem; color: #6c757d;">{{ $transaction->transaction_date->format('d M Y') }}</div>
+                    </div>
+                    <div style="font-weight: 600; color: #dc3545; font-size: 1.1rem;">{{ formatCurrency($transaction->amount, true) }}</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="background: #dc3545; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                        <i class="{{ $transaction->category->icon }}"></i> {{ $transaction->category->name }}
+                    </span>
+                    <div>
+                        <button onclick="editTransaction({{ $transaction->id }}, '{{ $transaction->description }}', {{ $transaction->amount }}, '{{ $transaction->transaction_date->format('Y-m-d') }}', {{ $transaction->category_id }})" style="background: var(--orange); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 4px; margin-right: 0.5rem; cursor: pointer; font-size: 0.8rem;">Edit</button>
+                        <form action="{{ route('transaksi.destroy', $transaction) }}" method="POST" style="display: inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" onclick="return confirm('Yakin hapus transaksi ini?')" style="background: #dc3545; color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Hapus</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div style="padding: 2rem; text-align: center; color: #6c757d;">Belum ada data pengeluaran</div>
+            @endforelse
+        </div>
     </div>
+    
+    <style>
+        @media (max-width: 768px) {
+            .desktop-table { display: none; }
+            .mobile-cards { display: block !important; }
+        }
+    </style>
 
     <!-- Modal Add/Edit -->
     <div id="addModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
@@ -166,12 +204,18 @@
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('#expenseTable tr');
+            const cards = document.querySelectorAll('.transaction-card');
             
             rows.forEach(row => {
                 if (row.children.length > 1) {
                     const text = row.textContent.toLowerCase();
                     row.style.display = text.includes(searchTerm) ? '' : 'none';
                 }
+            });
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
 
